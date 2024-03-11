@@ -50,6 +50,8 @@ jobs:
 
           formatted=$(echo "$to_check" | jq -c '.')
           echo "result=$formatted" >> $GITHUB_OUTPUT
+      
+      - uses: actions/checkout@v3
 
       - name: Validate Jobs
         uses: ./.github/actions/verify-pr-state
