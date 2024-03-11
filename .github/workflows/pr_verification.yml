@@ -1,9 +1,11 @@
 name: PR verification
 
 on:
+  push:
+    branches:
+      - dev, main
   pull_request:
-    paths:
-      - '**'
+    types: [opened, synchronize, reopened]
 
 jobs:
 
@@ -35,9 +37,8 @@ jobs:
     name: Test PR Verification State
     runs-on: ubuntu-latest
     steps:
-      # - name: Install additional tools
-      #   run: |
-      #     apt update && apt install -y jq
+
+      - uses: actions/checkout@v4
 
       - name: Test Pipeline State
         id: jobs_result
@@ -51,8 +52,6 @@ jobs:
           formatted=$(echo "$to_check" | jq -c '.')
           echo "result=$formatted" >> $GITHUB_OUTPUT
       
-      # - uses: actions/checkout@v3
-
       - name: Validate Jobs
         uses: ./.github/actions/verify-pr-state
         with:
