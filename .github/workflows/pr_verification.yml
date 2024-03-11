@@ -10,6 +10,7 @@ jobs:
   sonar_scan_verification:
     name: Sonar-scan
     uses: ./.github/workflows/sonar-scan.yml
+    secrets: inherit
 
   checklist:
     if: always()
@@ -34,9 +35,9 @@ jobs:
     name: Test PR Verification State
     runs-on: ubuntu-latest
     steps:
-      - name: Install additional tools
-        run: |
-          apt update && apt install -y jq
+      # - name: Install additional tools
+      #   run: |
+      #     apt update && apt install -y jq
 
       - name: Test Pipeline State
         id: jobs_result
