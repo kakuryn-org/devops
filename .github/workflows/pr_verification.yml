@@ -1,9 +1,6 @@
 name: PR verification
 
 on:
-  push:
-    branches:
-      - dev, main
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -14,30 +11,14 @@ jobs:
     uses: ./.github/workflows/sonar-scan.yml
     secrets: inherit
 
-  checklist:
-    if: always()
-    needs: [
-      sonar_scan_verification
-    ]
-    name: Checklist Verification
-    runs-on: ubuntu-latest
-    steps:
-      - uses: mheap/require-checklist-action@v2
-        with:
-          requireChecklist: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   test_pipeline_state:
     if: always()
     needs: [
-        sonar_scan_verification,
-        checklist
+        sonar_scan_verification
     ]
     name: Test PR Verification State
     runs-on: ubuntu-latest
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Test Pipeline State
@@ -45,8 +26,7 @@ jobs:
         shell: bash
         run: |
           to_check='[
-            { "name" : "checklist", "result": "${{ needs.checklist.result }}" },
-            { "name" : "auto_versioning", "result": "${{ needs.sonar_scan_verification.result }}" }
+            { "name" : "sonar_scan", "result": "${{ needs.sonar_scan_verification.result }}" }
           ]'
 
           formatted=$(echo "$to_check" | jq -c '.')

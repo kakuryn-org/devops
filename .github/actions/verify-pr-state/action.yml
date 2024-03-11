@@ -10,11 +10,6 @@ inputs:
 runs:
   using: composite
   steps:
-    # - name: Install additional tools
-    #   shell: bash
-    #   run: |
-    #     apt update && apt install -y jq
-
     - name: Iterate through array
       shell: bash
       run: |
