@@ -1,0 +1,56 @@
+name: PR verification
+
+on:
+  pull_request:
+    paths:
+      - '**'
+
+jobs:
+
+  sonar_scan_verification:
+    name: Sonar-scan
+    uses: ./.github/workflows/sonar-scan.yml
+
+  checklist:
+    if: always()
+    needs: [
+      sonar_scan_verification
+    ]
+    name: Checklist Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mheap/require-checklist-action@v2
+        with:
+          requireChecklist: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test_pipeline_state:
+    if: always()
+    needs: [
+        sonar_scan_verification,
+        checklist
+    ]
+    name: Test PR Verification State
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install additional tools
+        run: |
+          apt update && apt install -y jq
+
+      - name: Test Pipeline State
+        id: jobs_result
+        shell: bash
+        run: |
+          to_check='[
+            { "name" : "checklist", "result": "${{ needs.checklist.result }}" },
+            { "name" : "auto_versioning", "result": "${{ needs.sonar_scan_verification.result }}" }
+          ]'
+
+          formatted=$(echo "$to_check" | jq -c '.')
+          echo "result=$formatted" >> $GITHUB_OUTPUT
+
+      - name: Validate Jobs
+        uses: ./.github/actions/verify-pr-state
+        with:
+          jobs: '${{ steps.jobs_result.outputs.result }}'
